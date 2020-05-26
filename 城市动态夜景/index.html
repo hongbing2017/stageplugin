@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>城市动态夜景</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="yejin.css">
+</head>
+<body>
+
+<div id="vignette"></div>
+
+<script src="yejin.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+      let url = location.href;
+      let param = url.split('param=')[1] || ''
+      param = decodeURIComponent(param)
+      param = JSON.parse(param)
+      console.log("param:", param)
+	  
+	  if(param.bManage){
+		 $('body').html('<div style="color:#ddd;font-size:22px; font-style:normal; padding:30px 10px;">本插件需要铺满整个直播窗口作为背景使用，请点击最大化按钮，在直播窗口查看效果</div>')
+	  }else{
+      start() //yejin.js
+    }
+    })
+  </script>
+</body>
+</html>

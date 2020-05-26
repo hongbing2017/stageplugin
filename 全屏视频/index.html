@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>全屏视频插件</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="vidage-0.5.1/dist/vidage.js"></script>
+  <link rel="stylesheet" href="vidage-0.5.1/dist/vidage.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+
+    /* Override the cover image. Set the path to the actual image... */
+    .vidage::before {
+      background: #000;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .playlist {
+      flex: auto;
+      height: 120px;
+      min-height: 100px;
+      border: 1px solid #bbb;
+      background: #fff;
+      overflow: auto;
+    }
+
+    .playitem {
+      height: 22px;
+      width: 100%;
+      padding: 2px 10px;
+      color: #333;
+      font-size: 14px;
+      line-height: 22px;
+    }
+
+    .curItem {
+      background: rgb(36, 36, 206);
+      color: #fff;
+    }
+    
+    .toolbar {
+      flex: none;
+      display: flex;
+      padding: 10px;
+    }
+
+    .btn {
+      margin: 0 10px;
+      width: 60px;
+      height: 20px;
+      color: #333;
+      font-size: 14px;
+      text-align: center;
+      line-height: 20px;
+    }
+    .range{
+      border: 1px solid #999;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <div class="vidage" v-if="!bManage">
+      <video id="vidage" class="vidage-video" :src="curPlaySrc" preload="metadata" autoplay :loop="bLoop"
+        :muted="bMuted"></video>
+    </div>
+
+    <div class="control" v-else>
+      <div class="playlist">
+        <div class="playitem" :class="curPlaySrc==item.url?'curItem':''" :id="index" v-for="(item,index) in videoList"
+          :key="item.title" @click="onSelectPlay">
+          {{item.title}}</div>
+      </div>
+      <div class="toolbar">
+        <input class="btn" type="button" :value="bPlay?'暂停':'播放'" @click="onPlay"></input>
+        <span for="muted">静音</span></span><input name="muted" type="checkbox" @click="onMuted" :checked="bMuted"></input>
+        <span for="loop">循环</span></span><input name="loop" type="checkbox" @click="onLoop" :checked="bLoop"></input>
+        <input name='range' class="range" type='range' min=0 :max="duration" :value="currentTime"></input><span
+          for="range">{{currentTime.toFixed(0)+'/'+ duration.toFixed(0)}}</span>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+
+  var app = new Vue({
+    el: '#app',
+    data: {
+      ws: null,
+      name: '',
+      videoList: [],
+      curPlaySrc: '',
+      bManage: true,
+      bPlay: true,
+      bLoop: true,
+      bMuted: true,
+      duration: 0,
+      currentTime: 0
+
+    },
+    mounted() {
+      let url = location.href;
+      let param = url.split('param=')[1] || ''
+      param = decodeURIComponent(param)
+      param = JSON.parse(param)
+      console.log("param:", param)
+
+      this.videoList = param.videoList
+      this.bManage = param.bManage
+      this.name = param.pluginName
+
+      this.initWebsockt()
+
+      this.curPlaySrc = this.videoList[0].url
+      //test for(let i=0; i<20; i++)this.videoList.push({title:i+1,url:this.curPlaySrc+i})
+      console.log("playlist:", this.videoList)
+      if (!this.bManage) {
+        setTimeout(() => {
+          new Vidage('#vidage')
+          let video = document.querySelector('#vidage')
+          video.onended = () => {
+            this.onEnd()
+          }
+          let endTimeout = null
+          video.ontimeupdate = () => {
+            clearTimeout(endTimeout)
+            this.ws.send(JSON.stringify({
+              name: this.name,
+              bManage: false,
+              msg: 'currentTime',
+              value: video.currentTime
+            }))
+
+            const lessTime = this.duration - video.currentTime
+            // end event would not be fired while currentTime changed
+            // so use timeout to fire end event.
+            if (this.duration && lessTime < 5) {
+              endTimeout = setTimeout(() => {
+                this.onEnd()
+              }, lessTime * 1000 + 100)
+            }
+          }
+
+          video.oncanplay = () => {
+            console.log('duration:', video.duration)
+            this.duration = video.duration
+            this.ws.send(JSON.stringify({
+              name: this.name,
+              bManage: false,
+              msg: 'duration',
+              value: video.duration
+            }))
+
+          }
+        }, 0);
+
+      } else {
+        document.querySelector('body').style = "background:#ddd;"
+      }
+    },
+    computed: {
+     
+    },
+    methods: {
+      initWebsockt() {
+        var ws = new WebSocket(`ws:/127.0.0.1:5432/?name=${this.name}&bManage=${this.bManage}`);
+        var that = this
+        ws.onopen = function (e) {
+          console.log('Connection to server opened:' + ws.readyState);
+          //ws.send("hello")
+        }
+        ws.onmessage = function (evt) {
+          //console.log("ws client msg:", evt.data)
+          let data = JSON.parse(evt.data)
+          if (data.msg == 'play') {
+            that.play()
+          } else if (data.msg == 'pause') {
+            that.pause()
+          } else if (data.msg == 'muted') {
+            that.bMuted = data.bMuted
+          } else if (data.msg == 'loop') {
+            that.bLoop = data.bLoop
+          } else if (data.msg == 'duration') {
+            that.duration = data.value
+          } else if (data.msg == 'currentTime') {
+            that.currentTime = data.value
+          } else if(data.msg == 'newplay'){
+            that.curPlaySrc = data.curPlaySrc
+            that.onSelectPlay()
+          }
+        }
+        ws.onclose = function (evt) {
+          console.log("WebSocketClosed:", that.name);
+        };
+        this.ws = ws
+      },
+      onSelectPlay(e) {
+         if (!this.bManage) {
+          let el = document.querySelector('#vidage')
+          el.play()
+        }else{
+          let id = e.target.id
+          
+          console.log("select:", id)
+          let item = this.videoList[id]
+          this.curPlaySrc = item.url
+
+          this.ws.send(JSON.stringify({
+          name: this.name,
+          bManage: true,
+          msg: 'newplay',
+          curPlaySrc:this.curPlaySrc
+        }))
+        }
+      },
+      play() {
+        this.bPlay = true
+        if (!this.bManage) {
+          let el = document.querySelector('#vidage')
+          el.play()
+        }
+      },
+      pause() {
+        this.bPlay = false
+        if (!this.bManage) {
+          let el = document.querySelector('#vidage')
+          el.pause()
+        }
+      },
+      onPlay(e) {
+        this.bPlay = !this.bPlay
+        this.ws.send(JSON.stringify({
+          name: this.name,
+          bManage: true,
+          msg: this.bPlay ? 'play' : 'pause'
+        }))
+      },
+      onMuted(e) {
+        this.bMuted = !this.bMuted
+        this.ws.send(JSON.stringify({
+          name: this.name,
+          bManage: true,
+          msg: 'muted',
+          bMuted: this.bMuted
+        }))
+      },
+      onLoop(e) {
+        this.bLoop = !this.bLoop
+        this.ws.send(JSON.stringify({
+          name: this.name,
+          bManage: true,
+          msg: 'loop',
+          bLoop: this.bLoop
+        }))
+      },
+      onEnd() {
+        for (let i = 0; i < this.videoList.length; i++) {
+          if (this.videoList[i].url == this.curPlaySrc) {
+            if (!this.bLoop) {
+              let newIndex = i + 1;
+              if (newIndex < this.videoList.length) {
+                this.curPlaySrc = this.videoList[newIndex].url
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  })
+</script>
+
+</html>

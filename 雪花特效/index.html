@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雪花特效</title>
+    <script src="http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js"></script>
+    <script src="snow-plugin.js"></script>
+    
+    <style>
+        /* body{
+            background: #333;
+        } */
+        .snow-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            position: fixed;
+            pointer-events: none;
+        }
+    </style>
+    <!--[if IE]>
+		<script src="http://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+    <canvas class="snow-canvas" speed="1" interaction="false" size="2" count="80" opacity="0.00001"
+        start-color="rgba(253,252,251,1)" end-color="rgba(251,252,253,0.3)" wind-power="0" image="false" width="1366"
+        height="667"></canvas>
+    <canvas class="snow-canvas" speed="3" interaction="true" size="6" count="30" start-color="rgba(253,252,251,1)"
+        end-color="rgba(251,252,253,0.3)" opacity="0.00001" wind-power="2" image="false" width="1366"
+        height="667"></canvas>
+    <canvas class="snow-canvas" speed="3" interaction="true" size="12" count="20" wind-power="-5" image="snow.png"
+        width="1366" height="667"></canvas>
+
+</body>
+<script>
+    $(function () {
+        let url = location.href;
+      let param = url.split('param=')[1]||''
+      param = decodeURIComponent(param)
+      param = JSON.parse(param)
+      console.log("param:",param)
+  
+      if(param.bManage){
+        $('body').html('<div style="color:#ddd;font-size:22px; font-style:normal; padding:30px 10px;">在直播窗口查看效果，最好全屏覆盖在照片背景上使用</div>')
+
+      }else{
+          $(".snow-canvas").snow();
+      }
+        
+    });
+</script>
+</html>

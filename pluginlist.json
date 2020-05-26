@@ -1,0 +1,8 @@
+[
+    {"name":"摇晃的灯","comment":""},
+    {"name":"霓虹特效","comment":""},
+    {"name":"滚动文字","comment":"",},
+    {"name":"雪花特效","comment":"启用后CPU占用比较高，低端机不建议使用"},
+    {"name":"城市动态夜景","comment":""},
+    {"name":"五子棋","comment":""}
+]

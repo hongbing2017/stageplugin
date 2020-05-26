@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>文字滚动插件</title>
+  <script src="http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js"></script>
+  <script src="./jquery.marquee.min.js"></script>
+
+  <script type="text/javascript">
+    $(function () {
+      let url = location.href;
+      let param = url.split('param=')[1] || ''
+      param = decodeURIComponent(param)
+      param = JSON.parse(param)
+      console.log("param:", param)
+      
+      if(param.bManage){
+        $('body').html(`<div style="font-size:${param.fontSize}; color:${param.fontColor}; font-family:${param.fontName}; padding:30px 10px;">${param.text}</div>`)
+        return;
+      }
+      
+      let defualtParam = {
+        //duration in milliseconds of the marquee
+        duration: 15000,
+        //gap in pixels between the tickers
+        gap: 50,
+        //time in milliseconds before the marquee will start animating
+        delayBeforeStart: 0,
+        //'left' or 'right'
+        direction: 'left',
+        //true or false - should the marquee be duplicated to show an effect of continues flow
+        duplicated: true
+      }
+
+      param = param || defualtParam
+
+      let el = $('#text')
+      el.html(param.text)
+      el.css({
+        color: param.fontColor || '#ffffff',
+        'font-family': param.fontName || '微软雅黑',
+        'font-size': param.fontSize || '22px'
+      })
+        .marquee(param);
+    })
+  </script>
+</head>
+
+<body>
+  <div id="text">no text</div>
+</body>
+
+</html>
