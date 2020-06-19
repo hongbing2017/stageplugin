@@ -20,30 +20,6 @@
         {
           "text": "22px",
           "value": "22px"
-        },
-        {
-          "text": "32px",
-          "value": "32px"
-        },
-        {
-          "text": "36px",
-          "value": "36px"
-        },
-        {
-          "text": "42px",
-          "value": "42px"
-        },
-        {
-          "text": "46px",
-          "value": "46px"
-        },
-        {
-          "text": "56px",
-          "value": "56px"
-        },
-        {
-          "text": "64px",
-          "value": "64px"
         }
       ],
       "label": "字体大小",
