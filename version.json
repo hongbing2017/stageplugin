@@ -1,13 +1,13 @@
 {
-    "version":"v0.1.0",
+    "version":"v1.0.0",
     "sourceList":[
         {
             "title":"Github",
             "url":"https://github.com/hongbing2017/stage/releases"
         },
         {
-            "title":"百度云",
-            "url":"https://github.com/hongbing2017/stage/releases"
+            "title":"蓝凑云",
+            "url":"https://stage.lanzous.com/iNLQYdx1bjc"
         }    
     ]
 }
